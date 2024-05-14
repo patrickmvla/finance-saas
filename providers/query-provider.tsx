@@ -5,7 +5,6 @@
 // extracting this part out into it's own file with 'use client' on top
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -38,7 +37,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-export  function QueryProvider({ children }: Props) {
+export function QueryProvider({ children }: Props) {
   // NOTE: Avoid useState when initializing the query client if you don't
   //       have a suspense boundary between this and the code that may
   //       suspend because React will throw away the client on the initial
