@@ -1,24 +1,25 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { insertAccountSchema } from "@/db/schema";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { insertAccountSchema } from "@/db/schema";
 
-const formSchema = insertAccountSchema.pick({
+const fromSchema = insertAccountSchema.pick({
   name: true,
 });
 
-type FormValues = z.input<typeof formSchema>;
+type FormValues = z.input<typeof fromSchema>;
 
 type Props = {
   id?: string;
@@ -29,14 +30,14 @@ type Props = {
 };
 
 export const AccountForm = ({
-  onSubmit,
   id,
   defaultValues,
+  onSubmit,
   onDelete,
   disabled,
 }: Props) => {
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(fromSchema),
     defaultValues: defaultValues,
   });
 
@@ -47,6 +48,7 @@ export const AccountForm = ({
   const handleDelete = () => {
     onDelete?.();
   };
+
   return (
     <Form {...form}>
       <form
@@ -62,29 +64,29 @@ export const AccountForm = ({
               <FormControl>
                 <Input
                   disabled={disabled}
-                  placeholder="e.g. Cash, Bank, Credit Card"
+                  placeholder="e.g. Cash , Bank, Credit Card"
                   {...field}
                 />
               </FormControl>
             </FormItem>
           )}
         />
-      </form>
-      <Button className="w-full" disabled={disabled}>
-        {id ? "Save changes" : "Create account"}
-      </Button>
-      {!!id && (
-        <Button
-          className="w-full"
-          type="button"
-          variant="outline"
-          disabled={disabled}
-          onClick={onDelete}
-        >
-          <Trash className="size-4 mr-2" />
-          Delete account
+        <Button type="submit" className="w-full" disabled={disabled}>
+          {id ? "Save changes" : "Create account"}
         </Button>
-      )}
+        {!!id && (
+          <Button
+            type="button"
+            disabled={disabled}
+            onClick={handleDelete}
+            className="w-full"
+            variant="outline"
+          >
+            <Trash className="size-4 mr-2" />
+            Delete account
+          </Button>
+        )}
+      </form>
     </Form>
   );
 };
