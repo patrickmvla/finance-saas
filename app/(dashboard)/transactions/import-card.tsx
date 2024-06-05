@@ -10,7 +10,7 @@ const outputFormat = "yyyy-MM-dd";
 
 const requiredOptions = ["amount", "date", "payee"];
 
-interface SelectedColumnState {
+interface SelectedColumnsState {
   [key: string]: string | null;
 }
 
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
-  const [selectedColumns, setSelectedColumns] = useState<SelectedColumnState>(
+  const [selectedColumns, setSelectedColumns] = useState<SelectedColumnsState>(
     {}
   );
 
@@ -34,7 +34,6 @@ export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
   ) => {
     setSelectedColumns((prev) => {
       const newSelectedColumns = { ...prev };
-
       for (const key in newSelectedColumns) {
         if (newSelectedColumns[key] === value) {
           newSelectedColumns[key] = null;
@@ -46,7 +45,6 @@ export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
       }
 
       newSelectedColumns[`column_${columnIndex}`] = value;
-
       return newSelectedColumns;
     });
   };
@@ -58,8 +56,8 @@ export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
       return column.split("_")[1];
     };
 
-    const mappedDate = {
-      headers: headers.map((_header, index) => {
+    const mappedData = {
+      headers: headers.map((_headers, index) => {
         const columnIndex = getColumnIndex(`column_${index}`);
         return selectedColumns[`column_${columnIndex}`] || null;
       }),
@@ -77,12 +75,11 @@ export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
         .filter((row) => row.length > 0),
     };
 
-    const arrayOfData = mappedDate.body.map((row) => {
-      return row.reduce((acc: any, cell, index) => {
-        const header = mappedDate.headers[index];
-
+    const arrayOfData = mappedData.body.map((row) => {
+      return row.reduce((acc: any, curr, index) => {
+        const header = mappedData.headers[index];
         if (header !== null) {
-          acc[header] = cell;
+          acc[header] = curr;
         }
 
         return acc;
@@ -95,22 +92,22 @@ export const ImportCard = ({ data, onCancel, onSubmit }: Props) => {
       date: format(parse(item.date, dateFormat, new Date()), outputFormat),
     }));
 
-    onSubmit{formattedData}
-};
+    onSubmit(formattedData);
+  };
 
   return (
     <div className="max-w-screen-2xl mx-auto w-full pb-10 -mt-24">
       <Card className="border-none drop-shadow-sm">
         <CardHeader className="gap-y-2 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle className="text-xl line-clamp-1">
-            Import Transactions
+            Import Transaction
           </CardTitle>
-          <div className="flex flex-col lg:flex-row gap-y-2  items-center gap-x-2">
-            <Button size="sm" onClick={onCancel} className="w-full lg:w-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-y-2 gap-x-2">
+            <Button onClick={onCancel} size="sm" className="w-full lg:w-auto">
               Cancel
             </Button>
             <Button
-              disabled={progress < requiredOptions.length}
+              disabled={progress !== requiredOptions.length}
               onClick={handleContinue}
               size="sm"
               className="w-full lg:w-auto"
