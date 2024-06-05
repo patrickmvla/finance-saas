@@ -1,21 +1,17 @@
 "use client";
 
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import { useOpenAccount } from "@/modules/accounts/hooks/use-open-account";
-import { useDeleteAccount } from "@/modules/accounts/api/use-delete-account";
 
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteTransaction } from "@/modules/transactions/api/use-delete-transaction";
-import { useOpenTransaction } from "@/modules/transactions/hooks/use-open-account";
+import { useOpenTransaction } from "@/modules/transactions/hooks/use-open-transaction";
 
 type Props = {
   id: string;

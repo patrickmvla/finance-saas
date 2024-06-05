@@ -9,6 +9,7 @@ import { NewCategorySheet } from "@/modules/categories/components/new-category-s
 import { EditCategorySheet } from "@/modules/categories/components/edit-category-sheet";
 
 import { NewTransactionSheet } from "@/modules/transactions/components/new-transaction-sheet";
+import { EditTransactionSheet } from "@/modules/transactions/components/edit-transactions-sheet";
 
 export const SheetProvider = () => {
   const isMounted = useMountedState();
@@ -18,11 +19,12 @@ export const SheetProvider = () => {
     <>
       <NewAccountSheet />
       <EditAccountSheet />
-      
+
       <NewCategorySheet />
       <EditCategorySheet />
 
-      <NewTransactionSheet/>
+      <NewTransactionSheet />
+      <EditTransactionSheet />
     </>
   );
 };

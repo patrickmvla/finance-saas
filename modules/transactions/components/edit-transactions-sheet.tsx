@@ -8,19 +8,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-import { useEditAccount } from "@/modules/accounts/api/use-edit-account";
-import { useGetAccount } from "@/modules/accounts/api/use-get-account";
-import { AccountForm } from "@/modules/accounts/components/account-form";
-import { useOpenAccount } from "@/modules/accounts/hooks/use-open-account";
-import { useDeleteAccount } from "@/modules/accounts/api/use-delete-account";
-
 import { insertTransactionSchema } from "@/db/schema";
-import { Loader } from "lucide-react";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useOpenTransaction } from "../hooks/use-open-account";
-import { useGetTransaction } from "../api/use-get-transaction";
-import { useEditTransaction } from "../api/use-edit-transaction";
+import { Loader } from "lucide-react";
 import { useDeleteTransaction } from "../api/use-delete-transaction";
+import { useEditTransaction } from "../api/use-edit-transaction";
+import { useGetTransaction } from "../api/use-get-transaction";
+import { useOpenTransaction } from "../hooks/use-open-transaction";
+import { TransactionForm } from "./transaction-form";
+import { useGetCategories } from "@/modules/categories/api/use-get-categories";
+import { useCreateCategory } from "@/modules/categories/api/use-create-category";
+import { useGetAccounts } from "@/modules/accounts/api/use-get-accounts";
+import { useCreateAccount } from "@/modules/accounts/api/use-create-account";
 
 const formSchema = insertTransactionSchema.omit({
   id: true,
@@ -40,9 +39,39 @@ export const EditTransactionSheet = () => {
   const editMutation = useEditTransaction(id);
   const deleteMutation = useDeleteTransaction(id);
 
-  const isLoading = transactionQuery.isLoading;
+  const categoryQuery = useGetCategories();
+  const categoryMutation = useCreateCategory();
+  const onCreateCategory = (name: string) =>
+    categoryMutation.mutate({
+      name,
+    });
+  const categoryOptions = (categoryQuery.data ?? []).map((category) => ({
+    label: category.name,
+    value: category.id,
+  }));
 
-  const isPending = editMutation.isPending || deleteMutation.isPending;
+  const accountQuery = useGetAccounts();
+  const accountMutation = useCreateAccount();
+  const onCreateAccount = (name: string) =>
+    accountMutation.mutate({
+      name,
+    });
+  const accountOptions = (accountQuery.data ?? []).map((account) => ({
+    label: account.name,
+    value: account.id,
+  }));
+
+  const isLoading =
+    transactionQuery.isLoading ||
+    categoryQuery.isLoading ||
+    accountQuery.isLoading;
+
+  const isPending =
+    editMutation.isPending ||
+    deleteMutation.isPending ||
+    transactionQuery.isLoading ||
+    categoryMutation.isPending ||
+    accountMutation.isPending;
 
   const onSubmit = (values: FormValues) => {
     editMutation.mutate(values, {
@@ -66,10 +95,22 @@ export const EditTransactionSheet = () => {
 
   const defaultValues = transactionQuery.data
     ? {
-        name: transactionQuery.data.id,
+        accountId: transactionQuery.data.accountId,
+        categoryId: transactionQuery.data.categoryId,
+        amount: transactionQuery.data.amount.toString(),
+        date: transactionQuery.data.date
+          ? new Date(transactionQuery.data.date)
+          : new Date(),
+        payee: transactionQuery.data.payee,
+        notes: transactionQuery.data.notes,
       }
     : {
-        name: "",
+        accountId: "",
+        categoryId: "",
+        amount: "",
+        date: new Date(),
+        payee: "",
+        notes: "",
       };
 
   return (
@@ -86,7 +127,17 @@ export const EditTransactionSheet = () => {
               <Loader className="size-4 text-muted-foreground animate-spin" />
             </div>
           ) : (
-           <p>Tform</p>
+            <TransactionForm
+              id={id}
+              onSubmit={onSubmit}
+              onDelete={onDelete}
+              disabled={isPending}
+              defaultValues={defaultValues}
+              categoryOptions={categoryOptions}
+              onCreateCategory={onCreateCategory}
+              accountOptions={accountOptions}
+              onCreateAccount={onCreateAccount}
+            />
           )}
         </SheetContent>
       </Sheet>
