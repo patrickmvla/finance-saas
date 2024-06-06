@@ -21,7 +21,7 @@ const app = new Hono().get(
   ),
   async (c) => {
     const auth = getAuth(c);
-    const { to, from, accountId } = c.req.valid("query");
+    const { from, to, accountId } = c.req.valid("query");
 
     if (!auth?.userId) {
       return c.json({ error: "Unauthorized" }, 401);
@@ -33,6 +33,7 @@ const app = new Hono().get(
     const startDate = from
       ? parse(from, "yyyy-MM-dd", new Date())
       : defaultFrom;
+
     const endDate = to ? parse(to, "yyyy-MM-dd", new Date()) : defaultTo;
 
     const periodLength = differenceInDays(endDate, startDate) + 1;
@@ -44,7 +45,7 @@ const app = new Hono().get(
       startDate: Date,
       endDate: Date
     ) {
-      return await db
+      const data = await db
         .select({
           income:
             sql`SUM(CASE WHEN ${transactions.amount} >= 0 THEN ${transactions.amount} ELSE 0 END)`.mapWith(
@@ -66,6 +67,8 @@ const app = new Hono().get(
             lte(transactions.date, endDate)
           )
         );
+
+      return data;
     }
 
     const [currentPeriod] = await fetchFinancialData(
@@ -75,18 +78,20 @@ const app = new Hono().get(
     );
     const [lastPeriod] = await fetchFinancialData(
       auth.userId,
-      startDate,
-      endDate
+      lastPeriodStart,
+      lastPeriodEnd
     );
 
     const incomeChange = calculatePercentageChange(
       currentPeriod.income,
       lastPeriod.income
     );
+
     const expensesChange = calculatePercentageChange(
       currentPeriod.expenses,
       lastPeriod.expenses
     );
+
     const remainingChange = calculatePercentageChange(
       currentPeriod.remaining,
       lastPeriod.remaining
@@ -121,7 +126,10 @@ const app = new Hono().get(
 
     const finalCategories = topCategories;
     if (otherCategories.length > 0) {
-      finalCategories.push({ name: "Other", value: otherSum });
+      finalCategories.push({
+        name: "Other",
+        value: otherSum,
+      });
     }
 
     const activeDays = await db
